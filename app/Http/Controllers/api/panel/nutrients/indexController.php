@@ -304,7 +304,7 @@ class indexController extends Controller
         }
 		$response = $response->with("nutrients");
         $response = $response->orderBy($request->sortBy, $request->direction)->paginate($per_page);
-		
+
         /*foreach ($response as $key => $item) {
             $response[$key]["img_url"] = "uploads/settings/preparing/my.jpg";
             foreach ($item->nutrients as $v) {

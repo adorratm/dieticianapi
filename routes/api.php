@@ -304,7 +304,7 @@ Route::group(['namespace' => 'api'], function () {
                 });
                 Route::group(['namespace' => 'dieticians', "as" => "dieticians.", "prefix" => "dieticians"], function () {
                     Route::get("/", "indexController@index")->name("index");
-					
+
                     Route::post("/create", "indexController@store")->name("store");
                     Route::get("/update/{id}", "indexController@edit")->name("edit");
                     Route::post("/update/{id}", "indexController@update")->name("update");
@@ -312,7 +312,7 @@ Route::group(['namespace' => 'api'], function () {
                 });
                 Route::group(['namespace' => 'users', "as" => "users.", "prefix" => "users"], function () {
                     Route::get("/", "indexController@index")->name("index");
-					
+
                     Route::post("/create", "indexController@store")->name("store");
                     Route::get("/update/{id}", "indexController@edit")->name("edit");
                     Route::post("/update/{id}", "indexController@update")->name("update");
@@ -334,8 +334,8 @@ Route::group(['namespace' => 'api'], function () {
                     Route::match(['get','post'],"/user-allergenfoods", "indexController@userAllergenFoods")->name("userAllergenFoods");
                     Route::match(['get','post'],"/user-unlovedfoods", "indexController@userUnlovedFoods")->name("userUnlovedFoods");
                     Route::get("/user-diseases-get", "indexController@getAllDiseases")->name("userDiseasesGet");
-                    
-                   
+
+
                     /*
                      * Diyet Öğün Kaydı
                      */
