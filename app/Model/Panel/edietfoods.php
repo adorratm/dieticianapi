@@ -1,6 +1,7 @@
 <?php
 namespace App\Model\Panel;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 use Jenssegers\Mongodb\Eloquent\Model ;
 use Illuminate\Auth\Authenticatable as Authenticabletrait;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -13,7 +14,7 @@ class edietfoods extends Model implements Authenticatable
     protected $collection = 'edietfoods';
     protected $primarykey = "_id";
     protected $guarded = [];
-    protected $appends=['ageGroupss'];
+    protected $appends=['ageGroupss','calorie'];
     public function edietfoods()
     {
         return $this->hasOne(edietfoods_file::class, 'edietfoods_id', "_id")->select("img_url","edietfoods_id")->where(["isCover"=>1]);
@@ -27,7 +28,8 @@ class edietfoods extends Model implements Authenticatable
     public function scopeAgeFilter($query,$year)
     {
         if($year>18)
-            return $query->where('ageGroups',"18+");
+            return $query;
+//            return $query->where('ageGroups',"18+");
         if($year>10)
             return $query->where('ageGroups',"10+");
         if($year>1)
@@ -35,6 +37,18 @@ class edietfoods extends Model implements Authenticatable
         if($year>0)
             return $query->where('ageGroups',"0+");
     }
+
+    public function getCalorieAttribute()
+    {
+        $id = $this->attributes['_id'];
+        return intval($this->values()->where('type','kcal')->first()->valuee);
+    }
+
+    public function values()
+    {
+        return $this->hasMany(edietfoods_value::class);
+    }
+
 
 //    public function meals()
 //    {

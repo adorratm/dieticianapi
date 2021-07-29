@@ -43,193 +43,220 @@ class indexController extends Controller
     }
 
 
-    public function save($id,Request $request)
+    public function save($id, Request $request)
     {
         $user = DB::table("users")->where("_id", $id)->first();
         $currentDate = new Carbon($user["birthDate"]);
         $monthDifference = $currentDate->diffInMonths(Carbon::now(), false);
         $yearDifferance = $currentDate->diffInYears(Carbon::now(), false);
-		$data["user"] = $user;
+        $data["user"] = $user;
         $data["year"] = $yearDifferance;
         $data["month"] = $monthDifference;
         $data["criteria"] = DB::table("criteria")->where("isActive", 1)->get();
         $data["diseases"] = DB::table("diseases")->where("isActive", 1)->get();
         $data["meals"] = DB::table("meals")->get();
-		$data["edietfoods"] = DB::table("edietfoods")->where("isActive",1)->get();
-		$stressFacLabel = DB::table("factors")->get();
-		$data["exercises"] = DB::table("exercises")->get();
+        $data["edietfoods"] = DB::table("edietfoods")->where("isActive", 1)->get();
+        $stressFacLabel = DB::table("factors")->get();
+        $data["exercises"] = DB::table("exercises")->get();
 
 
+        $result = [];
+        $type = "Normal";
+        if (!empty($user["special_case"]) && $user["special_case"] == "YOK"):
+            $type = "Normal";
+        endif;
+        if (!empty($user["special_case"]) && $user["special_case"] == "EMZİKLİ"):
+            $type = "Emzikli";
+        endif;
+        if (!empty($user["special_case"]) && $user["special_case"] == "HAMİLE"):
+            $type = "Hamile";
+        endif;
 
-		$result = [];
-		$type="Normal";
-			if(!empty($user["special_case"]) && $user["special_case"] == "YOK"):
-				$type= "Normal";
-			endif;
-			if(!empty($user["special_case"]) && $user["special_case"] == "EMZİKLİ"):
-				$type= "Emzikli";
-			endif;
-			if(!empty($user["special_case"]) && $user["special_case"] == "HAMİLE"):
-				$type= "Hamile";
-			endif;
+
+        if ($yearDifferance > 18) {
+            $data["adultCalorieCalc"] = $this->adultCalorieCalc($user["_id"]);
+
+        } elseif ($yearDifferance > 10 && $yearDifferance <= 18) {
+            $data["adultCalorieCalc"] = $this->adultCalorieCalc($user["_id"]);
+        } elseif ($yearDifferance > 1 && $yearDifferance <= 10) {
+            $data["adultCalorieCalc"] = $this->adultCalorieCalc($user["_id"]);
+        } elseif ($yearDifferance > 0 && $yearDifferance <= 1) {
+            $data["adultCalorieCalc"] = $this->adultCalorieCalc($user["_id"]);
+        }
+
+        foreach ($stressFacLabel as $stressFacLabels) {
+
+            $stressFacValue = DB::table("factors_value")->where(["factors_id" => (string)$stressFacLabels['_id'], "type" => $type])
+                ->where("minAge", "<=", $yearDifferance)
+                ->where("maxAge", ">=", $yearDifferance)
+                ->get();
+            if (!in_array(["title" => $stressFacLabels["title"], "values" => $stressFacValue], $result)) {
+                array_push($result, ["title" => $stressFacLabels["title"], "values" => $stressFacValue]);
+            }
+        }
+        $data["factors"] = $result;
+        $data["test"] = "test";
+        if ($request->method() === "POST") {
+            $data["bmh"] = $this->HerrisBendricFormul($user);
+            $data["factores"] = $this->stresfaccalc($request->selectedFactors);
+            $factorFirst = $data["factores"][3]["value"];
+            $factorSecond = $data["factores"][4]["value"];
+            $factorThird = $data["factores"][5]["value"];
 
 
-		if ($yearDifferance > 18)
-		{
-			$data["adultCalorieCalc"] = $this->adultCalorieCalc($user["_id"]);
+            $data["factorFirst"] = $calcX = $data["bmh"] * $factorFirst;
+            $data["factorSecond"] = $calcX = $data["bmh"] * $factorSecond;
+            $data["factorThird"] = $calcX = $data["bmh"] * $factorThird;
+            $data["factorFour"] = $data["bmh"] + (($data["factorFirst"] - $data["bmh"]) + ($data["factorSecond"] - $data["bmh"]) + ($data["factorThird"] - $data["bmh"]));
 
-		}
-		elseif($yearDifferance >10 && $yearDifferance <= 18)
-		{
-			$data["adultCalorieCalc"] = $this->adultCalorieCalc($user["_id"]);
-		}
-		elseif($yearDifferance >1 && $yearDifferance <= 10)
-		{
-			$data["adultCalorieCalc"] = $this->adultCalorieCalc($user["_id"]);
-		}
-		elseif($yearDifferance >0 && $yearDifferance <= 1)
-		{
-			$data["adultCalorieCalc"] = $this->adultCalorieCalc($user["_id"]);
-		}
+            $data["dietFoods"] = $this->dietPlans($request->selectedMeals, $data["year"]);
+            $data["mealss"] = $this->calcMeals($data["factorFour"], $request->selectedMeals, $data["dietFoods"]);
 
-		foreach ($stressFacLabel as $stressFacLabels) {
 
-			$stressFacValue = DB::table("factors_value")->where(["factors_id" => (string)$stressFacLabels['_id'],"type" => $type])
-				->where("minAge", "<=", $yearDifferance)
-				->where("maxAge",">=", $yearDifferance)
-			->get();
-			if(!in_array(["title" => $stressFacLabels["title"], "values" =>$stressFacValue],$result)){
-				array_push($result,["title" => $stressFacLabels["title"], "values" =>$stressFacValue]);
-			}
-		}
-		$data["factors"] = $result;
-		$data["test"]= "test";
-		if($request->method() === "POST")
-		{
-			$data["bmh"] = $this->HerrisBendricFormul($user);
-			$data["factores"] = $this->stresfaccalc($request->selectedFactors);
-			$factorFirst = $data["factores"][3]["value"];
-			$factorSecond = $data["factores"][4]["value"];
-			$factorThird = $data["factores"][5]["value"];
-
-			$data["factorFirst"] = $calcX = $data["bmh"] * $factorFirst;
-			$data["factorSecond"] = $calcX = $data["bmh"] * $factorSecond;
-			$data["factorThird"] = $calcX = $data["bmh"] * $factorThird;
-
-			$data["dietFoods"] = $this->dietPlans($request->selectedMeals,$data["year"]);
-
-			
-
-		}
+        }
 
 
         return response()->json(["data" => $data], 200);
     }
 
-	public function stresfaccalc($selectedFactors)
-	{
-		foreach($selectedFactors as $key => $value){
-			if(!in_array(DB::table("factors_value")->where("_id",$value)->get(),$selectedFactors)):
-				$stressValue = array_push($selectedFactors,DB::table("factors_value")->where("_id",$value)->first());
-			endif;
 
-		}
-		return $selectedFactors;
-	}
 
-	public function HerrisBendricFormul($user)
-	{
-		$currentDate = new Carbon($user["birthDate"]);
-		$yearDifferance = $currentDate->diffInYears(Carbon::now(), false);
-		if($user["gender"] === 'Erkek')
-		{
-			$bmh = 66+(13.7* $user["weight"])+(5*$user["size"]) - (6*$yearDifferance);
-		}
-		else
-		{
-			$bmh = 655+(9.6* $user["weight"])+(1.8*$user["size"]) - (4.7*$yearDifferance);
-		}
-		return $bmh;
-	}
+    public function calcMeals($totalcalorie, $selectedMeals, $dietFoods)
+    {
+        $meals = [];
+        foreach ($selectedMeals as $key => $meal) {
+            $mealcalorie = intval($totalcalorie / count($selectedMeals));
+            $mealfoods = [];
+            $calorie = 0;
+//                $dietFoods=(array)$dietFoods;
+//                shuffle($dietFoods);
+//            $array = (array)$dietFoods;
+//            shuffle($array);
+//
+//            $object = new \stdClass();
+//            foreach ($array as $key => $value)
+//            {
+//                $object->$key = $value;
+//            }
+//            return $object;
+//            $dietFoods=array($dietFoods);
+//            return $dietFoods;
 
-	public function adultCalorieCalc($id)
-	{
-		 $user = DB::table("users")->where("_id", $id)->first();
+
+            foreach ($dietFoods as $food) {
+                if (in_array($meal['_id']['$oid'], $food->selectedMeals)) {
+                    if(random_int(1,3)==1){
+                        array_push($mealfoods, $food);
+                        $calorie = $calorie + $food->calorie;
+                    }
+                }
+                if ($calorie + 100 > $mealcalorie)
+                    break;
+            }
+//                $meals[$meal['_id']['$oid']]=$mealfoods;
+            $meals[$meal['name']]['foods'] = $mealfoods;
+            $meals[$meal['name']]['mealname'] = $meal['name'];
+            $meals[$meal['name']]['maxmealcalorie'] = $mealcalorie;
+            $meals[$meal['name']]['totalmealcalorie'] = $calorie;
+            $meals[$meal['name']]['rank'] = $meal['rank'];
+        }
+        usort($meals,function($a,$b){
+
+            return strcmp($a['rank'],$b['rank']);
+        });
+        return $meals;
+
+    }
+
+    public function stresfaccalc($selectedFactors)
+    {
+        foreach ($selectedFactors as $key => $value) {
+            if (!in_array(DB::table("factors_value")->where("_id", $value)->get(), $selectedFactors)):
+                $stressValue = array_push($selectedFactors, DB::table("factors_value")->where("_id", $value)->first());
+            endif;
+
+        }
+        return $selectedFactors;
+    }
+
+    public function HerrisBendricFormul($user)
+    {
+        $currentDate = new Carbon($user["birthDate"]);
+        $yearDifferance = $currentDate->diffInYears(Carbon::now(), false);
+        if ($user["gender"] === 'Erkek') {
+            $bmh = 66 + (13.7 * $user["weight"]) + (5 * $user["size"]) - (6 * $yearDifferance);
+        } else {
+            $bmh = 655 + (9.6 * $user["weight"]) + (1.8 * $user["size"]) - (4.7 * $yearDifferance);
+        }
+        return $bmh;
+    }
+
+    public function adultCalorieCalc($id)
+    {
+        $user = DB::table("users")->where("_id", $id)->first();
         $currentDate = new Carbon($user["birthDate"]);
         $monthDifference = $currentDate->diffInMonths(Carbon::now(), false);
         $yearDifferance = $currentDate->diffInYears(Carbon::now(), false);
 
-			//BKİ HESAPLADIK
-			$data["bki"] = round($user["weight"]/(($user["size"]/100)*($user["size"]/100)),2);
-			//Erkekler için BKİ Heris Bendric Formülü
-			if( $data["bki"] < 17.99 && $user["gender"] === 'Erkek')
-			{
-				$bkifiveplus = $data["bki"] + 5;
-				//OGA HESAPLA
-				$data["oga"] = $bkifiveplus*(($user["size"]/100)*($user["size"]/100));
-				//$data["bkiprint"] = echo "";
-			}
-			elseif( 18 < $data["bki"] && $data["bki"]< 27.99 && $user["gender"] === 'Erkek')
-			{
-				$bkidefault = $data["bki"];
-				//OGA HESAPLA
-				$data["oga"] =$bkidefault * (($user["size"]/100)*($user["size"]/100));
-			}
-			elseif($data["bki"] > 28 && $user["gender"] === 'Erkek')
-			{
-				$bkifiveminus = $data["bki"]-5;
-				//OGA HESAPLA
-				$data["oga"] = $bkifiveminus * (($user["size"]/100)*($user["size"]/100));
-			}
-			//Kadınlar için BKİ Heris Bendric Formülü
-			if( $data["bki"] < 16.99 && $user["gender"] === 'Kadın')
-			{
-				$bkifourplusgirl = $data["bki"] + 4;
-				//OGA HESAPLA
-				$data["oga"] = $bkifourplusgirl * (($user["size"]/100)*($user["size"]/100));
-				//$data["bkiprint"] = echo "";
-			}
-			elseif( 17 < $data["bki"] && $data["bki"]< 25.99 && $user["gender"] === 'Kadın')
-			{
-				$bkidefaultgirl = $data["bki"];
-				//OGA HESAPLA
-				$data["oga"] = $bkidefaultgirl * (($user["size"]/100)*($user["size"]/100));
-			}
-			elseif($data["bki"] > 26 && $user["gender"] === 'Kadın')
-			{
-				$bkifiveminusgirl = $data["bki"]-5;
-				//OGA HESAPLA
-				$data["oga"] = $bkifiveminusgirl * (($user["size"]/100)*($user["size"]/100));
-			}
+        //BKİ HESAPLADIK
+        $data["bki"] = round($user["weight"] / (($user["size"] / 100) * ($user["size"] / 100)), 2);
+        //Erkekler için BKİ Heris Bendric Formülü
+        if ($data["bki"] < 17.99 && $user["gender"] === 'Erkek') {
+            $bkifiveplus = $data["bki"] + 5;
+            //OGA HESAPLA
+            $data["oga"] = $bkifiveplus * (($user["size"] / 100) * ($user["size"] / 100));
+            //$data["bkiprint"] = echo "";
+        } elseif (18 < $data["bki"] && $data["bki"] < 27.99 && $user["gender"] === 'Erkek') {
+            $bkidefault = $data["bki"];
+            //OGA HESAPLA
+            $data["oga"] = $bkidefault * (($user["size"] / 100) * ($user["size"] / 100));
+        } elseif ($data["bki"] > 28 && $user["gender"] === 'Erkek') {
+            $bkifiveminus = $data["bki"] - 5;
+            //OGA HESAPLA
+            $data["oga"] = $bkifiveminus * (($user["size"] / 100) * ($user["size"] / 100));
+        }
+        //Kadınlar için BKİ Heris Bendric Formülü
+        if ($data["bki"] < 16.99 && $user["gender"] === 'Kadın') {
+            $bkifourplusgirl = $data["bki"] + 4;
+            //OGA HESAPLA
+            $data["oga"] = $bkifourplusgirl * (($user["size"] / 100) * ($user["size"] / 100));
+            //$data["bkiprint"] = echo "";
+        } elseif (17 < $data["bki"] && $data["bki"] < 25.99 && $user["gender"] === 'Kadın') {
+            $bkidefaultgirl = $data["bki"];
+            //OGA HESAPLA
+            $data["oga"] = $bkidefaultgirl * (($user["size"] / 100) * ($user["size"] / 100));
+        } elseif ($data["bki"] > 26 && $user["gender"] === 'Kadın') {
+            $bkifiveminusgirl = $data["bki"] - 5;
+            //OGA HESAPLA
+            $data["oga"] = $bkifiveminusgirl * (($user["size"] / 100) * ($user["size"] / 100));
+        }
 
 
-
-			return response()->json(["data" => $data], 200);
-
-
-	}
-
-	public function dietPlans($selectedMeals,$year)
-	{
-		$selectedMealsIds = [];
-		foreach($selectedMeals as $key =>$value):
-			array_push($selectedMealsIds,(string)$value["_id"]["\$oid"]);
-		endforeach;
-
-		$selectedFoods = edietfoods::whereIn("selectedMeals",$selectedMealsIds)->AgeFilter($year)->get();
-		foreach($selectedFoods as $row){
-
-			  $foodsitems[] = array(
-					'meals' => $row['meals']
-				);
-
-		}
+        return response()->json(["data" => $data], 200);
 
 
-		return $selectedFoods;
+    }
 
-	}
+    public function dietPlans($selectedMeals, $year)
+    {
+        $selectedMealsIds = [];
+        foreach ($selectedMeals as $key => $value):
+            array_push($selectedMealsIds, (string)$value["_id"]["\$oid"]);
+        endforeach;
 
+        $selectedFoods = edietfoods::whereIn("selectedMeals", $selectedMealsIds)->AgeFilter($year)->get();
+        foreach ($selectedFoods as $row) {
+
+            $foodsitems[] = array(
+                'meals' => $row['meals']
+            );
+
+        }
+
+
+        return $selectedFoods;
+
+    }
 
 
     public function store(Request $request)
