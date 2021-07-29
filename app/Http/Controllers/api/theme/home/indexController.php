@@ -32,6 +32,15 @@ class indexController extends Controller
         $this->viewData->baseURL = urlencode(url("/"));
     }
 
+    public function dieticians()
+    {
+        $dieticians=Dieticians::all();
+        return response()->json([
+            'status'=>'success',
+            'data'=>$dieticians
+        ],200);
+    }
+
     public function index()
     {
         $this->viewData->sliders = Sliders::where("isActive", 1)->get();
