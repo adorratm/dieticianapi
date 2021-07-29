@@ -32,9 +32,25 @@ class indexController extends Controller
         $this->viewData->baseURL = urlencode(url("/"));
     }
 
+    public function searchdieticians(Request $request)
+    {
+        $searchKey=$request->searchText;
+
+        strlen($searchKey) > 0 ? $dieticians=Dieticians::where(function ($query) use ($searchKey) {
+            $query->orWhere('name', 'like', '%' . $searchKey . '%');
+            $query->orWhere('email', 'like', '%' . $searchKey . '%');
+            $query->orWhere('phone', 'like', '%' . $searchKey . '%');
+            $query->orWhere('hospitalName', 'like', '%' . $searchKey . '%');
+        })
+            ->paginate(2) : $dieticians=Dieticians::paginate(2);
+        return response()->json([
+           'data'=>$dieticians
+        ],200);
+    }
+
     public function dieticians()
     {
-        $dieticians=Dieticians::all();
+        $dieticians=Dieticians::paginate(2);
         return response()->json([
             'status'=>'success',
             'data'=>$dieticians

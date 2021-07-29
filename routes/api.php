@@ -29,6 +29,7 @@ Route::group(['namespace' => 'api'], function () {
         Route::group(['namespace' => 'home', "as" => "home.", "prefix" => "home"], function () {
             Route::get("/", "indexController@index")->name("index");
             Route::get("/dieticians", "indexController@dieticians")->name("dieticians");
+            Route::post("/searchdieticians", "indexController@searchdieticians")->name("dieticianssearch");
             Route::get("/search", "indexController@search")->name("search");
         });
 
