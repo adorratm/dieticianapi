@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Theme\Home;
 
 use App\Http\Controllers\Controller;
+use App\Model\Panel\Recipes;
 use App\Model\Theme\Corporate;
 use App\Model\Theme\Dieticians;
 use App\Model\Theme\FoodDecided;
@@ -54,6 +55,31 @@ class indexController extends Controller
         return response()->json([
             'status'=>'success',
             'data'=>$dieticians
+        ],200);
+    }
+
+    public function recipes()
+    {
+        $recipes=Recipes::paginate(2);
+        return response()->json([
+            'status'=>'success',
+            'data'=>$recipes
+        ],200);
+    }
+
+    public function searchrecipes(Request $request)
+    {
+        $searchKey=$request->searchText;
+
+        strlen($searchKey) > 0 ? $recipes=Recipes::where(function ($query) use ($searchKey) {
+            $query->orWhere('name', 'like', '%' . $searchKey . '%');
+            $query->orWhere('description', 'like', '%' . $searchKey . '%');
+            $query->orWhere('portion', 'like', '%' . $searchKey . '%');
+            $query->orWhere('calorie', 'like', '%' . $searchKey . '%');
+        })
+            ->paginate(2) : $recipes=Recipes::paginate(2);
+        return response()->json([
+            'data'=>$recipes
         ],200);
     }
 
