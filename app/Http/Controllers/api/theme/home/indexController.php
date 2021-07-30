@@ -3,13 +3,16 @@
 namespace App\Http\Controllers\Api\Theme\Home;
 
 use App\Http\Controllers\Controller;
+use App\Model\Panel\exercise_categories;
 use App\Model\Panel\Recipes;
 use App\Model\Theme\Corporate;
 use App\Model\Theme\Dieticians;
+use App\Model\Theme\Exercises;
 use App\Model\Theme\FoodDecided;
 use App\Model\Theme\News;
 use App\Model\Theme\Settings;
 use App\Model\Theme\Sliders;
+use http\Env\Response;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
@@ -80,6 +83,50 @@ class indexController extends Controller
             ->paginate(2) : $recipes=Recipes::paginate(2);
         return response()->json([
             'data'=>$recipes
+        ],200);
+    }
+
+    public function categoryexercises($slug)
+    {
+        $exercises=exercise_categories::where('slug',$slug)->firstOrFail()->exercises()->orderBy('rank','ASC')->paginate(9);
+        return response()->json([
+            'status'=>'success',
+            'data'=>$exercises
+        ],200);
+    }
+
+    public function searchcategoryexercises(Request $request,$slug)
+    {
+        $searchKey=$request->searchText;
+
+        strlen($searchKey) > 0 ? $exercisecategories=exercise_categories::where('slug',$slug)->firstOrFail()->exercises()->where(function ($query) use ($searchKey) {
+            $query->orWhere('name', 'like', '%' . $searchKey . '%');
+        })
+            ->orderBy('rank','ASC')->paginate(9) : $exercisecategories=exercise_categories::where('slug',$slug)->firstOrFail()->exercises()->orderBy('rank','ASC')->paginate(9);
+        return response()->json([
+            'data'=>$exercisecategories
+        ],200);
+    }
+
+    public function exercisecategories()
+    {
+        $exercisecategories=exercise_categories::orderBy('rank','ASC')->paginate(3);
+        return response()->json([
+            'status'=>'success',
+            'data'=>$exercisecategories
+        ],200);
+    }
+
+    public function searchexercisecategories(Request $request)
+    {
+        $searchKey=$request->searchText;
+
+        strlen($searchKey) > 0 ? $exercisecategories=exercise_categories::where(function ($query) use ($searchKey) {
+            $query->orWhere('name', 'like', '%' . $searchKey . '%');
+        })
+            ->orderBy('rank','ASC')->paginate(3) : $exercisecategories=exercise_categories::orderBy('rank','ASC')->paginate(2);
+        return response()->json([
+            'data'=>$exercisecategories
         ],200);
     }
 

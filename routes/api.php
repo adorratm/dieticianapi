@@ -30,8 +30,12 @@ Route::group(['namespace' => 'api'], function () {
             Route::get("/", "indexController@index")->name("index");
             Route::get("/dieticians", "indexController@dieticians")->name("dieticians");
             Route::get("/recipes", "indexController@recipes")->name("recipes");
+            Route::get("/exercisecategories", "indexController@exercisecategories")->name("exercisecategories");
+            Route::get("/categoryexercises/{slug}", "indexController@categoryexercises")->name("categoryexercises");
             Route::post("/searchdieticians", "indexController@searchdieticians")->name("dieticianssearch");
             Route::post("/searchrecipes", "indexController@searchrecipes")->name("recipessearch");
+            Route::post("/searchexercisecategories", "indexController@searchexercisecategories")->name("exercisecategoriessearch");
+            Route::post("/searchcategoryexercises/{slug}", "indexController@searchcategoryexercises")->name("categoryexercisessearch");
             Route::get("/search", "indexController@search")->name("search");
         });
 

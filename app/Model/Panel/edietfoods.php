@@ -14,7 +14,7 @@ class edietfoods extends Model implements Authenticatable
     protected $collection = 'edietfoods';
     protected $primarykey = "_id";
     protected $guarded = [];
-    protected $appends=['ageGroupss','calorie'];
+    protected $appends=['ageGroupss','calorie','protein','karbonhidrat','yag'];
     public function edietfoods()
     {
         return $this->hasOne(edietfoods_file::class, 'edietfoods_id', "_id")->select("img_url","edietfoods_id")->where(["isCover"=>1]);
@@ -47,6 +47,23 @@ class edietfoods extends Model implements Authenticatable
     public function values()
     {
         return $this->hasMany(edietfoods_value::class);
+    }
+
+    public function getProteinAttribute()
+    {
+        $id = $this->attributes['_id'];
+
+        return $this->values()->where('title','PROTEİN')->first()->valuee ?? '';
+    }
+    public function getKarbonhidratAttribute()
+    {
+        $id = $this->attributes['_id'];
+        return $this->values()->where('title','KARBONHİDRAT')->first()->valuee ?? '';
+    }
+    public function getYagAttribute()
+    {
+        $id = $this->attributes['_id'];
+        return $this->values()->where('title','YAĞ, TOPLAM')->first()->valuee ?? '';
     }
 
 

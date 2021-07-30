@@ -21,4 +21,9 @@ class exercises_file extends Model implements Authenticatable
     {
         return $this->belongsTo(exercises::class);
     }
+
+    public function getImgUrlAttribute()
+    {
+        return url($this->attributes['img_url']);
+    }
 }
