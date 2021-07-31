@@ -33,6 +33,15 @@ class indexController extends Controller
         $this->viewData->settings = Settings::where("isActive", 1)->orderBy("rank")->limit(1)->get();
     }
 
+    public function show($slug)
+    {
+        $recipe=\App\Model\Panel\Recipes::where('slug',$slug)->firstOrFail();
+        return response()->json([
+            'success'=>true,
+           'data'=>$recipe
+        ],200);
+    }
+
     public function index(Request $request)
     {
         $response = Recipes::where(["isActive" => 1])->where("slug", $request->slug)->first();

@@ -45,6 +45,7 @@ Route::group(['namespace' => 'api'], function () {
         });
         Route::group(['namespace' => 'recipes', "as" => "recipes.", "prefix" => "recipes"], function () {
             Route::get("/{slug}", "indexController@index")->name("index");
+            Route::get("/details/{slug}", "indexController@show")->name("show");
         });
         Route::group(['namespace' => 'nutrients', "as" => "nutrients.", "prefix" => "nutrients"], function () {
             Route::get("/", "indexController@index")->name("index");
