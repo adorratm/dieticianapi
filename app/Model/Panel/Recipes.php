@@ -2,6 +2,7 @@
 namespace App\Model\Panel;
 use http\Url;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Jenssegers\Mongodb\Eloquent\Model ;
 use Illuminate\Auth\Authenticatable as Authenticabletrait;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -22,6 +23,7 @@ class Recipes extends Model implements Authenticatable
 
     public function getImgUrlAttribute()
     {
+        return "https://api.klinikdiyetisyen.com/public".Storage::url($this->recipes->img_url);
         return url($this->recipes->img_url);
     }
 }

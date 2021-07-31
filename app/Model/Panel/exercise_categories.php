@@ -1,6 +1,8 @@
 <?php
 namespace App\Model\Panel;
+use http\Url;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Jenssegers\Mongodb\Eloquent\Model ;
 use Illuminate\Auth\Authenticatable as Authenticabletrait;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -21,7 +23,7 @@ class exercise_categories extends Model implements Authenticatable
 
     public function getImgUrlAttribute()
     {
-        return url($this->exercise_categories->img_url);
+        return "https://api.klinikdiyetisyen.com/public".Storage::url($this->exercise_categories->img_url);
     }
 
     public function exercises()
