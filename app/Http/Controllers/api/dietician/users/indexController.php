@@ -49,12 +49,24 @@ class indexController extends Controller
 
     public function store(Request $request)
     {
+        if(User::where('email',$request->email)->get()->count()>0)
+            return response()->json([
+                'success'=>false,
+                'title'=>'Email Kullanılıyor',
+                'msg'=>'Farklı bir email deneyin!'
+            ], 403, [], JSON_UNESCAPED_UNICODE);
         $data = $request->except("_token");
-        //$data["password"] = Hash::make($data["password"]);
-        $users = DB::table("users")
+        $data["password"] = Hash::make($data["password"]);
+        DB::table("users")
             ->insert($data);
+        $users=User::all()->last();
       //dd($users);
-       return response($users, 200, [], JSON_UNESCAPED_UNICODE);
+       return response()->json([
+           'data'=>$users,
+           'success'=>true,
+           'title'=>'Başarılı',
+           'msg'=>'Başarıyla Eklendi'
+       ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 
     public function edit($id)
@@ -118,7 +130,7 @@ class indexController extends Controller
                 "logo" => asset("storage/" . $settings->logo)
             ];
             $mail = MailJobs::dispatch($data, $users);
-			
+
             if ($mail) {
                 return response()->json(["success" => true, "title" => "Başarılı!", "msg" => "Danışan Başvurunuz Başarıyla Danışana Bildirildi."], 200, [], JSON_UNESCAPED_UNICODE);
             } else {
@@ -131,28 +143,28 @@ class indexController extends Controller
 
     public function userDiseases(Request $request)
     {
-		
+
         $dietician = DB::table("dieticians")
             ->where("_id", $request->dietician_id)
             ->first();
 
-       
+
 		$datas[] = $request->selectedDiseases;
 		foreach($datas as $data)
 		{
-			
+
 			$data = array(
 				"userdiseases" => $data,
 				"ditican_id" => $dietician,
 				"user_id" =>  $request->id,
 			);
 		}
-		
-	
+
+
 
 		$diseasesDelete = DB::table("users_diseases")
 		->where("user_id",$request->id)->delete();
-		
+
         $dataInsert = DB::table("users_diseases")
             ->insert($data);
         if ($dataInsert) {
@@ -162,12 +174,12 @@ class indexController extends Controller
         }
 
     }
-	
-	
-	
+
+
+
 	public function userAllergenFoods(Request $request)
     {
-				
+
 		$datas[] = $request->selectedAllergenFoods;
 		foreach($datas as $data)
 		{
@@ -175,8 +187,8 @@ class indexController extends Controller
 				"allergenfoods" => $data,
 			);
 		}
-		
-		
+
+
         $dataInsert = DB::table("users_diseases")->where("user_id",$request->id)
             ->update($data);
 		if ($dataInsert) {
@@ -184,12 +196,12 @@ class indexController extends Controller
         } else {
             return response()->json(["success" => false, "title" => "Başarısız!", "msg" => "Bu Bilgilere Ait Bir Kullanıcı Bulunmamaktadır."], 200, [], JSON_UNESCAPED_UNICODE);
         }
-		
+
     }
-	
+
 	public function userUnlovedFoods(Request $request)
     {
-				
+
 		$datas[] = $request->selectedUnlikedFoods;
 		foreach($datas as $data)
 		{
@@ -197,8 +209,8 @@ class indexController extends Controller
 				"unlovedfoods" => $data,
 			);
 		}
-		
-		
+
+
         $dataInsert = DB::table("users_diseases")->where("user_id",$request->id)
             ->update($data);
 		if ($dataInsert) {
@@ -206,7 +218,7 @@ class indexController extends Controller
         } else {
             return response()->json(["success" => false, "title" => "Başarısız!", "msg" => "Bu Bilgilere Ait Bir Kullanıcı Bulunmamaktadır."], 200, [], JSON_UNESCAPED_UNICODE);
         }
-		
+
     }
 
     public function getAllDiseases()
@@ -318,8 +330,8 @@ class indexController extends Controller
         }
 
     }
-	
-	
+
+
 
     public function destroy($id)
     {

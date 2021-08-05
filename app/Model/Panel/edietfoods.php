@@ -67,6 +67,7 @@ class edietfoods extends Model implements Authenticatable
     }
 
 
+
 //    public function meals()
 //    {
 //        return $this->hasMany();

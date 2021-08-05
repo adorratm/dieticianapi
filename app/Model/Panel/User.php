@@ -24,9 +24,9 @@ class User extends Model implements Authenticatable
      *
      * @var array
      */
-    protected $fillable = [
-        'name', 'email', 'password','tc','phone'
-    ];
+//    protected $fillable = [
+//        'name', 'email', 'password','tc','phone','address','birthDate','chest','city','district','gender','hip','lowerArm'
+//    ];
 
     /**
      * The attributes that should be hidden for arrays.

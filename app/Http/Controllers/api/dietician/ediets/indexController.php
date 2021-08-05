@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Model\Panel\edietfoods;
 use App\Model\Panel\ediets;
 use App\Model\Theme\User;
+use http\Env\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
@@ -141,11 +142,22 @@ class indexController extends Controller
 //            return $object;
 //            $dietFoods=array($dietFoods);
 //            return $dietFoods;
-
+//            $array = json_decode(json_encode($dietFoods), true);
+//            return $array;
+            foreach ($dietFoods as $value)
+                $array[] = $value->post_id;
+            return $array;
 
             foreach ($dietFoods as $food) {
                 if (in_array($meal['_id']['$oid'], $food->selectedMeals)) {
-                    if(random_int(1,3)==1){
+                    $bool=false;
+                    foreach ($mealfoods as $mealfood){
+                        if(explode(' ',$food->name)[0]==explode(' ',$mealfood->name)[0]){
+                            $bool=true;
+                            break;
+                        }
+                        }
+                    if(random_int(1,3)==1 && $bool==false){
                         array_push($mealfoods, $food);
                         $calorie = $calorie + $food->calorie;
                     }
