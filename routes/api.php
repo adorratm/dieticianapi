@@ -51,6 +51,11 @@ Route::group(['namespace' => 'api'], function () {
             Route::get("/", "indexController@index")->name("index");
             Route::get("/{slug}", "indexController@detail")->name("detail");
         });
+        Route::group(['namespace' => 'appointments', "as" => "appointments.", "prefix" => "appointments"], function () {
+            Route::get("/", "indexController@index")->name("index");
+            Route::get("/{slug}", "indexController@show")->name("show");
+            Route::post("/", "indexController@store")->name("store");
+        });
         Route::group(['namespace' => 'informations', "as" => "informations.", "prefix" => "informations"], function () {
             Route::get("/cities", "indexController@city")->name("city");
             Route::get("/country", "indexController@country")->name("country");
@@ -86,6 +91,7 @@ Route::group(['namespace' => 'api'], function () {
         });
         Route::group(["namespace" => "dieticians", "as" => "dieticians.", "prefix" => "dieticians"], function () {
             Route::get("/dieticians", "indexController@dieticians")->name("dieticians");
+            Route::get("/dieticians/{slug}", "indexController@show")->name("showdieticians");
             Route::get("/login", "indexController@login")->name("login");
             Route::post("/login", "indexController@login")->name("login");
             Route::post("/register", "indexController@register")->name("register");

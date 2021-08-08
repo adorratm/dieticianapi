@@ -144,9 +144,6 @@ class indexController extends Controller
 //            return $dietFoods;
 //            $array = json_decode(json_encode($dietFoods), true);
 //            return $array;
-            foreach ($dietFoods as $value)
-                $array[] = $value->post_id;
-            return $array;
 
             foreach ($dietFoods as $food) {
                 if (in_array($meal['_id']['$oid'], $food->selectedMeals)) {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Theme\Dieticians;
 
 use App\Http\Controllers\Controller;
+use App\Model\Theme\Dietician;
 use App\Model\Theme\Dieticians;
 use App\Model\Theme\Corporate;
 use App\Model\Theme\FoodDecided;
@@ -42,6 +43,15 @@ class indexController extends Controller
                 return response()->json("Böyle Bir Kullanıcı Bulunmamaktadır.", 200, [], JSON_UNESCAPED_UNICODE);
             }
         }
+    }
+
+    public function show($slug)
+    {
+        $data=Dieticians::where('slug',$slug)->firstOrFail();
+        return \response()->json([
+           'data'=>$data,
+           'success'=>true
+        ],200);
     }
 
     public function dieticians(Request $request)
